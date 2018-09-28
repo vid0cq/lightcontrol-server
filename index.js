@@ -21,7 +21,7 @@ function buildMsg(level)
       "smartlife.iot.smartbulb.lightingservice": {
         "transition_light_state": {
           "on_off": 1,
-          "transition_period": 0,
+          "transition_period": 1000,
           "brightness": level
         }
       }
@@ -36,7 +36,7 @@ app.get('/lux', function (req, res){
   res.send('value:' + req.query.value);
   
   var msg = buildMsg( parseInt(req.query.value) );
-  
+  console.log(msg);
   //broadcast
   for (var i = 0; i < lights.length; i++) {
     lights[i].send(msg);
@@ -44,8 +44,8 @@ app.get('/lux', function (req, res){
   
 });
 
-app.listen(8080, '192.168.0.108', function () {
-  console.log('Example app listening on port 3000!');
+app.listen(80, '192.168.0.109', function () {
+  console.log('Example app listening on port 80!');
 });
 
 const lightEE = TPLSmartDevice.scan()
