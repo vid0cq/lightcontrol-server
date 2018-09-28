@@ -63,9 +63,13 @@ app.get('/add', function (req, res){
 	return;
   }
   
+  var step = parseInt(req.query.step);
+  if (step == undefined)
+	step = 1;
+  
   infoPromise.then(info => { 
   
-    var brightness = info.light_state.brightness + 1;
+    var brightness = info.light_state.brightness + step;
 	
 	if (brightness > 100)
       brightness = 100;
@@ -94,12 +98,16 @@ app.get('/sub', function (req, res){
 	return;
   }
   
+  var step = parseInt(req.query.step);
+  if (step == undefined)
+	step = 1;
+  
   infoPromise.then(info => { 
   
-    var brightness = info.light_state.brightness - 1;
+    var brightness = info.light_state.brightness - step;
 	
 	if (brightness < 0)
-      brightness = 100;
+      brightness = 0;
   
 	console.log('Current brightness: ' + info.light_state.brightness);
 	console.log('Decreased brightness: ' + brightness);
