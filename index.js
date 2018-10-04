@@ -2,6 +2,7 @@ var TPLSmartDevice = require('tplink-lightbulb');
 var express = require('express');
 var app = express();
 var lights = [];
+var zero_count=0;
 
 function getFirstLightInfoPromise() {
 
@@ -15,12 +16,12 @@ function getFirstLightInfoPromise() {
   
 }
 
-function buildMsg(level)
+function buildMsg(level, onoff)
 {
 	return {
       "smartlife.iot.smartbulb.lightingservice": {
         "transition_light_state": {
-          "on_off": 1,
+          "on_off": onoff,
           "transition_period": 1000,
           "brightness": level
         }
@@ -35,7 +36,13 @@ app.get('/', function (req, res) {
 app.get('/lux', function (req, res){
   res.send('value:' + req.query.value);
   
-  var msg = buildMsg( parseInt(req.query.value) );
+  var level=parseInt(req.query.value);
+  if(level===0) zero_count++;
+  else zero_count=0;
+  var onoff=1;
+  if (zero_count>10) onoff=0; 
+  
+  var msg = buildMsg(level,onoff);
   console.log(msg);
   //broadcast
   for (var i = 0; i < lights.length; i++) {
@@ -69,7 +76,7 @@ app.get('/add', function (req, res){
   
   infoPromise.then(info => { 
   
-    var brightness = info.light_state.brightness + step;
+  var brightness = info.light_state.brightness + step;
 	
 	if (brightness > 100)
       brightness = 100;
@@ -108,6 +115,14 @@ app.get('/sub', function (req, res){
 	
 	if (brightness < 0)
       brightness = 0;
+    
+    var level=parseInt(req.query.value);
+  if(level===0) zero_count++;
+  else zero_count=0;
+  var onoff=1;
+  if (zero_count>10) onoff=0; 
+  
+  var msg = buildMsg(level,onoff);
   
 	console.log('Current brightness: ' + info.light_state.brightness);
 	console.log('Decreased brightness: ' + brightness);
@@ -116,7 +131,7 @@ app.get('/sub', function (req, res){
 	
 	//broadcast
 	for (var i = 0; i < lights.length; i++) {
-		lights[i].send(buildMsg(brightness));
+		lights[i].send(msg);
     }
 	
   });
